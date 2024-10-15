@@ -1,3 +1,7 @@
+import {
+  initialCards
+} from './cards.js'
+
 // @todo: Темплейт карточки
 const cardTemplate = document.querySelector('#card-template').content; //темплейт карточек
 const cardContainer = document.querySelector('.places__list'); //контейнер для добавления новых карточек
