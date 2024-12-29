@@ -1,6 +1,18 @@
 import { createCard, handleDelete, handleLike } from './card.js';
 import { openModal, closeModal } from './modal.js';
 import { initialCards } from './cards.js';
+import { clearValidation, enableValidation } from "./validation.js";
+
+const validationConfig = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
+
+enableValidation(validationConfig);
 
 // DOM элементы
 const cardsContainer = document.querySelector('.places__list');
@@ -38,6 +50,7 @@ function handleAddCardFormSubmit(evt) {
   cardsContainer.prepend(cardElement);
   closeModal(addCardModal);
   evt.target.reset();
+  clearValidation(validationConfig, addCardForm); // Очистка ошибок валидации
 }
 
 function handleCardClick(cardData) {
@@ -57,10 +70,14 @@ initialCards.forEach(cardData => {
 profileEditButton.addEventListener('click', () => {
   nameInput.value = profileName.textContent;
   descriptionInput.value = profileDescription.textContent;
+  clearValidation(validationConfig, profileForm); // Очистка ошибок валидации
   openModal(profileEditModal);
 });
 
-addCardButton.addEventListener('click', () => openModal(addCardModal));
+addCardButton.addEventListener('click', () => {
+  clearValidation(validationConfig, addCardForm); // Очистка ошибок валидации
+  openModal(addCardModal);
+});
 
 profileForm.addEventListener('submit', handleProfileFormSubmit);
 addCardForm.addEventListener('submit', handleAddCardFormSubmit);
