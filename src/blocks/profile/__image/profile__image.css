@@ -1,12 +1,45 @@
 .profile__image {
   width: 120px;
   height: 120px;
-  -webkit-border-radius: 50%;
-  -moz-border-radius: 50%;
   border-radius: 50%;
   background-size: cover;
   background-position: center;
   margin: 0 29px 0 0;
+  position: relative; /* Добавлено для позиционирования иконки */
+  cursor: pointer; /* Добавлено для указателя курсора */
+  overflow: hidden; /* Добавлено для обрезки иконки внутри аватара */
+}
+
+.profile__image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Затемнение */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.profile__edit-icon {
+  width: 24px;
+  height: 24px;
+  background: url('../../../images/edit-icon.svg') center no-repeat;
+  background-size: cover;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Центрирование иконки */
+  display: none; /* Скрываем иконку по умолчанию */
+}
+
+.profile__image:hover::before {
+  opacity: 1; /* Показываем затемнение при наведении */
+}
+
+.profile__image:hover .profile__edit-icon {
+  display: block; /* Показываем иконку при наведении */
 }
 
 @media screen and (max-width: 740px) {
