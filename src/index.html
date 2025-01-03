@@ -85,6 +85,8 @@
               placeholder="Занятие"
               minlength="2"
               maxlength="200"
+              pattern="^[a-zA-Zа-яёА-ЯЁ\s\-]+$"
+              data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы"
               required
             />
             <span

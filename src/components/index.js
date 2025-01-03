@@ -10,7 +10,6 @@
 //  С Новым 2025 годом!
 //  Пусть ваш код всегда будет чистым и без ошибок!
 
-
 import { createCard, handleDelete, handleLike } from './card.js';
 import { openModal, closeModal } from './modal.js';
 import { clearValidation, enableValidation } from "./validation.js";
@@ -43,24 +42,26 @@ const validationConfig = {
   errorClass: 'popup__error_visible'
 };
 
-// Загрузка информации о пользователе
-apiUserInfo().then(userInfo => {
-  profileName.textContent = userInfo.name;
-  profileDescription.textContent = userInfo.about;
-  profileImage.style.backgroundImage = `url(${userInfo.avatar})`;
-}).catch(err => {
-  console.error(`Ошибка загрузки информации о пользователе: ${err}`);
-});
+let userId = ''; // Переменная для хранения ID пользователя
 
-// Инициализация карточек
-apiCard().then(cards => {
-  cards.forEach(cardData => {
-    const cardElement = createCard(cardData, handleDelete, handleLike, handleCardClick);
-    cardsContainer.append(cardElement);
+// Загрузка информации о пользователе и карточек
+Promise.all([apiUserInfo(), apiCard()])
+  .then(([userInfo, cards]) => {
+    // Сохранение ID пользователя
+    userId = userInfo._id;
+    profileName.textContent = userInfo.name;
+    profileDescription.textContent = userInfo.about;
+    profileImage.style.backgroundImage = `url(${userInfo.avatar})`;
+
+    // Инициализация карточек
+    cards.forEach(cardData => {
+      const cardElement = createCard(cardData, handleDelete, handleLike, handleCardClick, userId);
+      cardsContainer.append(cardElement);
+    });
+  })
+  .catch(err => {
+    console.error(`Ошибка загрузки данных: ${err}`);
   });
-}).catch(err => {
-  console.error(`Ошибка загрузки карточек: ${err}`);
-});
 
 function handleProfileFormSubmit(evt) {
   evt.preventDefault();
@@ -68,9 +69,9 @@ function handleProfileFormSubmit(evt) {
   const originalButtonText = submitButton.textContent;
   submitButton.textContent = 'Сохранение...';
 
-  apiEditProfiInfo(nameInput.value, descriptionInput.value).then(() => {
-    profileName.textContent = nameInput.value;
-    profileDescription.textContent = descriptionInput.value;
+  apiEditProfiInfo(nameInput.value, descriptionInput.value).then((userInfo) => {
+    profileName.textContent = userInfo.name;
+    profileDescription.textContent = userInfo.about;
     closeModal(profileEditModal);
   }).catch(err => {
     console.error(`Ошибка обновления профиля: ${err}`);
@@ -90,7 +91,7 @@ function handleAddCardFormSubmit(evt) {
     link: placeLinkInput.value
   };
   apiNewPlace(newCard).then(cardData => {
-    const cardElement = createCard(cardData, handleDelete, handleLike, handleCardClick);
+    const cardElement = createCard(cardData, handleDelete, handleLike, handleCardClick, userId);
     cardsContainer.prepend(cardElement);
     closeModal(addCardModal);
     evt.target.reset();
@@ -108,8 +109,8 @@ function handleAvatarFormSubmit(evt) {
   const originalButtonText = submitButton.textContent;
   submitButton.textContent = 'Сохранение...';
 
-  apiEditProfileImage(avatarUrlInput.value).then(() => {
-    profileImage.style.backgroundImage = `url(${avatarUrlInput.value})`;
+  apiEditProfileImage(avatarUrlInput.value).then((userInfo) => {
+    profileImage.style.backgroundImage = `url(${userInfo.avatar})`;
     closeModal(editAvatarModal);
   }).catch(err => {
     console.error(`Ошибка обновления аватара: ${err}`);
@@ -126,7 +127,7 @@ function handleCardClick(cardData) {
   imageElement.src = cardData.link;
   imageElement.alt = cardData.name;
   captionElement.textContent = cardData.name;
-  
+
   openModal(imagePopup);
 }
 

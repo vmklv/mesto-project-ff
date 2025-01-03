@@ -20,10 +20,7 @@ let userId = ''; // Переменная для хранения ID пользо
 export function apiUserInfo() {
   return fetch(`${config.baseUrl}/users/me`, {
     headers: config.headers
-  }).then(checkResponse).then(userInfo => {
-    userId = userInfo._id; // Сохранение ID пользователя
-    return userInfo;
-  });
+  }).then(checkResponse);
 }
 
 // Функция для получения карточек

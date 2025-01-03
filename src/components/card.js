@@ -1,7 +1,7 @@
-import { apiDeleteCard, apiLikePost, apiDeleteLikePost, userId } from './api.js';
+import { apiDeleteCard, apiLikePost, apiDeleteLikePost } from './api.js';
 import { openModal, closeModal } from './modal.js';
 
-export function createCard(cardData, handleDelete, handleLike, handleCardClick) {
+export function createCard(cardData, handleDelete, handleLike, handleCardClick, userId) {
   const cardTemplate = document.querySelector('#card-template').content;
   const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
   const cardImage = cardElement.querySelector('.card__image');
@@ -26,32 +26,27 @@ export function createCard(cardData, handleDelete, handleLike, handleCardClick) 
     cardDeleteButton.style.display = 'none';
   }
 
-  cardLikeButton.addEventListener('click', handleLike);
+  cardLikeButton.addEventListener('click', (evt) => handleLike(evt, cardElement, userId));
   cardDeleteButton.addEventListener('click', () => handleDelete(cardElement));
   cardImage.addEventListener('click', () => handleCardClick(cardData));
 
   return cardElement;
 }
 
-export function handleLike(evt) {
-  const cardElement = evt.target.closest('.card');
+export function handleLike(evt, cardElement, userId) {
   const cardId = cardElement.dataset.id;
   const cardLikeCount = cardElement.querySelector('.card__like-count');
-  if (evt.target.classList.contains('card__like-button_is-active')) {
-    apiDeleteLikePost(cardId).then((updatedCard) => {
-      evt.target.classList.remove('card__like-button_is-active');
+  const isLiked = evt.target.classList.contains('card__like-button_is-active');
+  const likeMethod = isLiked ? apiDeleteLikePost : apiLikePost;
+
+  likeMethod(cardId)
+    .then((updatedCard) => {
+      evt.target.classList.toggle('card__like-button_is-active');
       cardLikeCount.textContent = updatedCard.likes.length;
-    }).catch(err => {
-      console.error(`Ошибка удаления лайка: ${err}`);
+    })
+    .catch(err => {
+      console.error(`Ошибка ${isLiked ? 'снятия' : 'установки'} лайка: ${err}`);
     });
-  } else {
-    apiLikePost(cardId).then((updatedCard) => {
-      evt.target.classList.add('card__like-button_is-active');
-      cardLikeCount.textContent = updatedCard.likes.length;
-    }).catch(err => {
-      console.error(`Ошибка добавления лайка: ${err}`);
-    });
-  }
 }
 
 export function handleDelete(cardElement) {
@@ -59,7 +54,7 @@ export function handleDelete(cardElement) {
   const confirmDeleteModal = document.querySelector('.popup_type_confirm-delete');
   openModal(confirmDeleteModal);
 
-  confirmDeleteModal.querySelector('.popup__form').addEventListener('submit', (evt) => {
+  confirmDeleteModal.querySelector('.popup__form').onsubmit = (evt) => {
     evt.preventDefault();
     apiDeleteCard({ idPost: cardId }).then(() => {
       cardElement.remove();
@@ -67,5 +62,5 @@ export function handleDelete(cardElement) {
     }).catch(err => {
       console.error(`Ошибка удаления карточки: ${err}`);
     });
-  }, { once: true });
+  };
 }
